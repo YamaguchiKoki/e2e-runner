@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+*.log
+.e2e-artifacts/
+
+# terraform
+infra/terraform.tfvars
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate*
+infra/crash.log
