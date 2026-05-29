@@ -39,6 +39,10 @@ function main(argv: string[]): number {
   }
   const targetUrl = process.env.TARGET_URL ?? "";
   const targetResolved = parsed.data.target.replace(/\$\{TARGET_URL\}/g, targetUrl);
+  if (targetResolved.trim() === "") {
+    process.stderr.write("target resolved to empty string (is TARGET_URL set?)\n");
+    return 1;
+  }
   const accountEnvKey = `E2E_ACCOUNT_${parsed.data.account}_PASSWORD`;
   const out = {
     frontMatter: { ...parsed.data, target: targetResolved },

@@ -54,10 +54,23 @@ describe("parse-scenario", () => {
   });
 
   it("timeoutSec のデフォルトは 120", () => {
-    const r = run([path.join(FIXTURES, "valid-login.md")], {
+    const r = run([path.join(FIXTURES, "valid-no-timeout.md")], {
       TARGET_URL: "https://stg.example.com",
     });
+    expect(r.status).toBe(0);
     const out = JSON.parse(r.stdout);
     expect(out.frontMatter.timeoutSec).toBe(120);
+  });
+
+  it("TARGET_URL 未設定で ${TARGET_URL} を含む target は exit 1", () => {
+    // 環境から TARGET_URL を確実に外す
+    const env = { ...process.env };
+    delete env.TARGET_URL;
+    const r = spawnSync("npx", ["tsx", BIN, path.join(FIXTURES, "valid-login.md")], {
+      encoding: "utf-8",
+      env,
+    });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("TARGET_URL");
   });
 });
