@@ -2,7 +2,6 @@
 id: login-systemadmin-001
 target: ${TARGET_URL}
 account: SYSTEM_ADMIN
-issueRepo: yaichi-tech/strike-hyperion
 timeoutSec: 120
 tags: [smoke, auth]
 ---

@@ -85,6 +85,7 @@ RUN_ID=$RUN_ID" \
       status=$(jq -r .status "$result_file" 2>/dev/null || echo "RUNNER_BUG")
     fi
     [[ "$status" == "PASS" ]] && break
+    [[ "$status" == "RUNNER_BUG" ]] && break
     [[ $attempt -lt 2 ]] && sleep 60
   done
 

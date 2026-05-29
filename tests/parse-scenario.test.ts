@@ -28,6 +28,7 @@ describe("parse-scenario", () => {
     expect(out.body).toContain("## 期待結果");
   });
 
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: intentional literal in test name
   it("${TARGET_URL} が env で展開される", () => {
     const r = run([path.join(FIXTURES, "valid-login.md")], {
       TARGET_URL: "https://other.example.com",
@@ -62,6 +63,7 @@ describe("parse-scenario", () => {
     expect(out.frontMatter.timeoutSec).toBe(120);
   });
 
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: intentional literal in test name
   it("TARGET_URL 未設定で ${TARGET_URL} を含む target は exit 1", () => {
     // 環境から TARGET_URL を確実に外す
     const env = { ...process.env };

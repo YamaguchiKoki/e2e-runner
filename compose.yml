@@ -20,6 +20,8 @@ services:
     image: mcuadros/ofelia:latest
     container_name: codex-e2e-cron
     command: daemon --docker
+    environment:
+      TZ: Asia/Tokyo
     depends_on:
       - codex-e2e
     volumes:

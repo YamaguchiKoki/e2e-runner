@@ -7,10 +7,6 @@ const FrontMatterSchema = z.object({
   id: z.string().regex(/^[a-z][a-z0-9-]*$/, "id must match ^[a-z][a-z0-9-]*$"),
   target: z.string().min(1, "target is required"),
   account: z.string().regex(/^[A-Z][A-Z0-9_]*$/, "account must match ^[A-Z][A-Z0-9_]*$"),
-  issueRepo: z
-    .string()
-    .regex(/^[^/]+\/[^/]+$/, "issueRepo must be owner/repo")
-    .optional(),
   timeoutSec: z.number().int().positive().default(120),
   tags: z.array(z.string()).optional(),
 });
