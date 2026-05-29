@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # シナリオを順に実行する。--dry-run で実際の codex exec を呼ばずに動作確認。
 # --only <id> で特定シナリオだけ実行。
+
+# 注意: 同一シナリオが連続失敗しても、毎回新規 Issue を起票する (MVP の挙動)。
+# Issue 集約 / dedup は build-issue.ts や別 cron で実装する想定 (将来)。
 set -euo pipefail
 
 DRY_RUN=0
 ONLY=""
+MATCHED=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) DRY_RUN=1; shift ;;
@@ -50,6 +54,7 @@ for scenario in "$SCENARIO_DIR"/*.md; do
   if [[ -n "$ONLY" ]] && [[ "$id" != "$ONLY" ]]; then
     continue
   fi
+  MATCHED=$((MATCHED + 1))
 
   result_file="/tmp/result-${id}.json"
   RUN_ID="$(node -e 'console.log(crypto.randomUUID())')"
@@ -94,12 +99,13 @@ JSON
       echo "build-issue failed for $id" >&2
       continue
     }
-    title=$(echo "$issue_json" | jq -r .title)
-    body=$(echo "$issue_json" | jq -r .body)
-    labels=$(echo "$issue_json" | jq -r '.labels | join(",")')
+    title=$(echo "$issue_json" | jq -r .title) || { echo "jq parse failed for $id (title)" >&2; continue; }
+    body=$(echo "$issue_json" | jq -r .body) || { echo "jq parse failed for $id (body)" >&2; continue; }
+    labels=$(echo "$issue_json" | jq -r '.labels | join(",")') || { echo "jq parse failed for $id (labels)" >&2; continue; }
 
     if ! gh issue create -R "$GITHUB_REPO" --title "$title" --body "$body" --label "$labels"; then
-      for lbl in $(echo "$labels" | tr ',' ' '); do
+      IFS=',' read -ra lbl_arr <<< "$labels"
+      for lbl in "${lbl_arr[@]}"; do
         gh label create -R "$GITHUB_REPO" "$lbl" --color B60205 2>/dev/null || true
       done
       gh issue create -R "$GITHUB_REPO" --title "$title" --body "$body" --label "$labels" \
@@ -107,5 +113,10 @@ JSON
     fi
   fi
 done
+
+if [[ -n "$ONLY" ]] && [[ "$MATCHED" -eq 0 ]]; then
+  echo "FATAL: --only '$ONLY' matched no scenario" >&2
+  exit 2
+fi
 
 echo "run-regression completed"
