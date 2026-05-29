@@ -1,0 +1,7 @@
+{
+  "status": "INFRA_ERROR",
+  "scenarioId": "login-systemadmin-001",
+  "target": "https://stg.example.com",
+  "rootCause": "playwright-cli open でタイムアウト (30s)",
+  "runId": "abc-456"
+}

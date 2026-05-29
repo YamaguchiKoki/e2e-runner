@@ -1,0 +1,10 @@
+{
+  "status": "FAIL",
+  "scenarioId": "login-systemadmin-001",
+  "target": "https://stg.example.com",
+  "failedStep": "「ログイン」ボタンを押す",
+  "rootCause": "ボタン押下後 30 秒待っても URL が /dashboard に変わらない",
+  "snapshotExcerpt": "yaml-snapshot here\nline2\nline3",
+  "durationMs": 32100,
+  "runId": "abc-123"
+}

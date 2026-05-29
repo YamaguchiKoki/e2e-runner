@@ -1,0 +1,6 @@
+{
+  "status": "RUNNER_BUG",
+  "scenarioId": "login-systemadmin-001",
+  "rootCause": "Codex が RESULT_FILE に JSON を書かなかった",
+  "runId": "abc-789"
+}

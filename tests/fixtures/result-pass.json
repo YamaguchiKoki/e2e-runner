@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "scenarioId": "login-systemadmin-001",
+  "target": "https://stg.example.com",
+  "durationMs": 8200,
+  "runId": "abc-pass"
+}
