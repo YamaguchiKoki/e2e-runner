@@ -1,0 +1,32 @@
+services:
+  codex-e2e:
+    build: .
+    image: codex-e2e-runner:local
+    container_name: codex-e2e
+    env_file: .env
+    volumes:
+      - codex-auth:/root/.codex
+      - artifacts:/app/.e2e-artifacts
+      - targets:/opt/targets
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.regression.schedule: "0 7 * * 1-5"
+      ofelia.job-exec.regression.command: "/app/scripts/run-regression.sh"
+      ofelia.job-exec.regression.no-overlap: "true"
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+
+  cron:
+    image: mcuadros/ofelia:latest
+    container_name: codex-e2e-cron
+    command: daemon --docker
+    depends_on:
+      - codex-e2e
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+
+volumes:
+  codex-auth:
+  artifacts:
+  targets:
