@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lib:
+    runs-on: ubuntu-latest
+    name: lib (vitest + biome + typecheck)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  shell:
+    runs-on: ubuntu-latest
+    name: shell (shellcheck)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: shellcheck scripts/*.sh
+
+  docker:
+    runs-on: ubuntu-latest
+    name: docker (build + validate)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: codex-e2e-runner:ci
+      - name: Validate fixture md via container
+        run: |
+          docker run --rm \
+            -v "$PWD/tests/fixtures:/work" \
+            codex-e2e-runner:ci \
+            validate /work/valid-login.md
+
+  compose:
+    runs-on: ubuntu-latest
+    name: compose (config -q)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create empty .env
+        run: touch .env
+      - run: docker compose config -q
