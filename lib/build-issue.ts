@@ -101,9 +101,10 @@ function buildBody(r: NonPassResult): string {
   if (r.status === "FAIL") {
     lines.push("");
     lines.push("## 画面スナップショット抜粋");
-    lines.push("```yaml");
-    lines.push(truncateSnapshot(r.snapshotExcerpt));
-    lines.push("```");
+    lines.push("");
+    for (const line of truncateSnapshot(r.snapshotExcerpt).split("\n")) {
+      lines.push(`    ${line}`);
+    }
   }
   lines.push("");
   lines.push("## 再実行");
@@ -124,8 +125,23 @@ function main(argv: string[]): number {
     process.stderr.write("usage: build-issue.ts --file <result.json>\n");
     return 2;
   }
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const parsed = RunResultSchema.safeParse(JSON.parse(raw));
+  let raw: string;
+  try {
+    raw = fs.readFileSync(filePath, "utf-8");
+  } catch {
+    process.stderr.write(`file not found: ${filePath}\n`);
+    return 1;
+  }
+
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    process.stderr.write(`invalid JSON in ${filePath}\n`);
+    return 1;
+  }
+
+  const parsed = RunResultSchema.safeParse(json);
   if (!parsed.success) {
     process.stderr.write(`${JSON.stringify(parsed.error.format(), null, 2)}\n`);
     return 1;

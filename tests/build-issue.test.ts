@@ -22,6 +22,7 @@ describe("build-issue", () => {
     expect(out.body).toContain("「ログイン」ボタンを押す");
     expect(out.body).toContain("/dashboard");
     expect(out.body).toContain("abc-123");
+    expect(out.body).toMatch(/ {4}yaml-snapshot here/);
     expect(out.labels).toContain("e2e-failure");
     expect(out.labels).toContain("scenario:login-systemadmin-001");
   });
@@ -71,7 +72,8 @@ describe("build-issue", () => {
       const r = run(["--file", tmpPath]);
       const out = JSON.parse(r.stdout);
       const matches = out.body.match(/line-\d+/g) ?? [];
-      expect(matches.length).toBeLessThanOrEqual(30);
+      expect(matches.length).toBe(30);
+      expect(out.body).toContain("30 more lines truncated");
     } finally {
       fs.unlinkSync(tmpPath);
     }
@@ -80,5 +82,43 @@ describe("build-issue", () => {
   it("引数なしは exit 2", () => {
     const r = run([]);
     expect(r.status).toBe(2);
+  });
+
+  it("存在しない file は exit 1", () => {
+    const r = run(["--file", "/nonexistent/path/x.json"]);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("file not found");
+  });
+
+  it("invalid JSON は exit 1", () => {
+    const tmpPath = path.join(FIXTURES, "_tmp-invalid.json");
+    fs.writeFileSync(tmpPath, "{ this is not json");
+    try {
+      const r = run(["--file", tmpPath]);
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain("invalid JSON");
+    } finally {
+      fs.unlinkSync(tmpPath);
+    }
+  });
+
+  it("RUNNER_BUG without runId: body は run id 行を含まない", () => {
+    const tmpPath = path.join(FIXTURES, "_tmp-runner-bug-no-runid.json");
+    fs.writeFileSync(
+      tmpPath,
+      JSON.stringify({
+        status: "RUNNER_BUG",
+        scenarioId: "x-001",
+        rootCause: "test",
+      }),
+    );
+    try {
+      const r = run(["--file", tmpPath]);
+      expect(r.status).toBe(0);
+      const out = JSON.parse(r.stdout);
+      expect(out.body).not.toContain("run id");
+    } finally {
+      fs.unlinkSync(tmpPath);
+    }
   });
 });
