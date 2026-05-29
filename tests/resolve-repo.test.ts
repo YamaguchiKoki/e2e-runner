@@ -72,4 +72,23 @@ describe("resolve-repo", () => {
     expect(r.status).toBe(0);
     expect(r.stdout.trim()).toBe("owner/repo");
   });
+
+  it("origin URL が空文字列なら exit 1", () => {
+    const dir = makeTempGit(null);
+    tmpDirs.push(dir);
+    // origin を追加した後、URL を空に上書き
+    execSync('git remote add origin "https://example.com/x/y.git"', { cwd: dir });
+    execSync('git config remote.origin.url ""', { cwd: dir });
+    const r = runInDir(dir);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("empty");
+  });
+
+  it("末尾スラッシュ付き URL でも owner/repo を抽出", () => {
+    const dir = makeTempGit("https://github.com/yaichi-tech/strike-hyperion/");
+    tmpDirs.push(dir);
+    const r = runInDir(dir);
+    expect(r.status).toBe(0);
+    expect(r.stdout.trim()).toBe("yaichi-tech/strike-hyperion");
+  });
 });

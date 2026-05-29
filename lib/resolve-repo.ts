@@ -25,10 +25,11 @@ function main(): number {
     return 1;
   }
   if (!url) {
-    process.stderr.write("origin remote not configured\n");
+    process.stderr.write("origin remote URL is empty\n");
     return 1;
   }
-  const match = url.match(/[:/]([^/:]+)\/([^/]+?)(?:\.git)?$/);
+  const normalized = url.replace(/\/+$/, "");
+  const match = normalized.match(/[:/]([^/:]+)\/([^/]+?)(?:\.git)?$/);
   if (!match) {
     process.stderr.write(`could not parse owner/repo from: ${url}\n`);
     return 1;
